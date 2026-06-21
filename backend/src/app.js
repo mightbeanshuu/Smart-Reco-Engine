@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import errorHandler from "./middleware/errorHandler.js";
 import productRoutes from "./routes/productRoutes.js";
+import inventoryRoutes from "./routes/inventoryRoutes.js";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use(express.json());
 
 //for products
 app.use("/api/products",productRoutes);
+app.use("/api/inventory",inventoryRoutes);
 
 // Health Check Route
 app.get("/", (req, res) => {
