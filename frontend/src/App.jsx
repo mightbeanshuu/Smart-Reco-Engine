@@ -19,7 +19,6 @@ function Sidebar({ cartCount }) {
     { to: '/inventory', label: 'Inventory', icon: <Package size={16} /> },
     { to: '/shop', label: 'Smart Storefront', icon: <Store size={16} />, badge: null },
     { to: '/cart', label: 'Cart', icon: <ShoppingCart size={16} />, badge: cartCount },
-    { to: '#', label: 'Settings', icon: <Settings size={16} /> },
   ];
 
   return (
@@ -109,7 +108,7 @@ function TopHeader({ cartCount, onCartToggle }) {
       {/* Greeting */}
       <Box>
         <Typography sx={{ fontSize: '1.25rem', fontWeight: 500 }}>
-          Welcome back, Admin! 👋
+          Welcome back, Admin!
         </Typography>
         <Typography sx={{ fontFamily: 'var(--mono)', fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>
           Here's what's happening with your store today.
