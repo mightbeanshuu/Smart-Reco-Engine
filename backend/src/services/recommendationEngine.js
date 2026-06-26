@@ -1,23 +1,17 @@
-// src/services/recommendationEngine.js
-
-const MAX_PRICE_DIFF = 100; // tune based on your seed data
-
 function calculatePriceScore(sourcePrice, candidatePrice) {
-  const diff = Math.abs(sourcePrice - candidatePrice);
-  const similarity = Math.max(0, 1 - diff / MAX_PRICE_DIFF);
-  // Bonus: slightly cheaper alternatives score higher
-  const cheaperBonus = candidatePrice < sourcePrice ? 0.1 : 0;
-  return Math.min(1, similarity + cheaperBonus);
+  if (sourcePrice === 0) {
+    return candidatePrice === 0 ? 1 : 0;
+  }
+
+  return 1 - Math.min(Math.abs(candidatePrice - sourcePrice) / sourcePrice, 1);
 }
 
 function calculateRatingScore(candidateRating) {
-  return candidateRating / 5; // normalized 0–1
+  return candidateRating / 5;
 }
 
 function calculateInventoryScore(availableQuantity) {
-  if (availableQuantity <= 0) return 0;
-  if (availableQuantity >= 50) return 1;
-  return availableQuantity / 50; // partial credit for low stock
+  return availableQuantity > 0 ? 1 : 0;
 }
 
 function buildExplainerTags(source, candidate, inventoryQty) {
@@ -30,32 +24,41 @@ function buildExplainerTags(source, candidate, inventoryQty) {
 }
 
 export function recommend(source, candidates, inventoryMap, limit = 5) {
-  const scored = candidates.map((candidate) => {
-    const qty = inventoryMap.get(candidate._id.toString()) ?? 0;
+  const scored = candidates
+    .filter((candidate) => candidate.category === source.category)
+    .map((candidate) => {
+      const qty = inventoryMap.get(candidate._id.toString()) ?? 0;
 
-    const categoryScore  = 1; // already filtered to same category = full 40pts
-    const priceScore     = calculatePriceScore(source.price, candidate.price);
-    const ratingScore    = calculateRatingScore(candidate.rating);
-    const inventoryScore = calculateInventoryScore(qty);
+      // Category is both the hard gate above and the 40-point relevance floor.
+      const categoryScore = 1;
+      const priceScore = calculatePriceScore(source.price, candidate.price);
+      const ratingScore = calculateRatingScore(candidate.rating);
+      const inventoryScore = calculateInventoryScore(qty);
 
-    const finalScore = Math.round(
-      (categoryScore * 40) +
-      (priceScore    * 20) +
-      (ratingScore   * 20) +
-      (inventoryScore* 20)
-    );
+      const finalScore = Number(
+        (
+          categoryScore * 40 +
+          priceScore * 20 +
+          ratingScore * 20 +
+          inventoryScore * 20
+        ).toFixed(1)
+      );
 
-    return {
-      product: candidate,
-      score: finalScore,
-      inventoryQty: qty,
-      tags: buildExplainerTags(source, candidate, qty),
-    };
-  });
+      return {
+        product: candidate,
+        score: finalScore,
+        inventoryQty: qty,
+        tags: buildExplainerTags(source, candidate, qty),
+      };
+    });
 
-  // Sort descending, return top 5
+  // In-stock alternatives stay ahead before score tie-breaking.
   return scored
-    .sort((a, b) => b.score - a.score)
+    .sort((a, b) => {
+      const stockDelta = Number(b.inventoryQty > 0) - Number(a.inventoryQty > 0);
+      if (stockDelta !== 0) return stockDelta;
+      return b.score - a.score;
+    })
     .slice(0, limit);
 }
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Typography, IconButton, Button, Container, Grid } from '@mui/material';
 import { Trash2, Plus, Minus, Lock, Terminal } from 'lucide-react';
 
