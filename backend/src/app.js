@@ -7,19 +7,22 @@ import errorHandler from "./middleware/errorHandler.js";
 import productRoutes from "./routes/productRoutes.js";
 import inventoryRoutes from "./routes/inventoryRoutes.js";
 import recommendationRoutes from "./routes/recommendationRoutes.js";
+import analyticsRoutes from "./routes/analyticsRoutes.js";
 
 dotenv.config();
 
-const app = express();                //Creates the Express "app" object and Think of this as the engine of your server.
+const app = express();
 
 // Middleware
-app.use(cors());
+const allowedOrigins = process.env.CLIENT_ORIGIN?.split(",").map((origin) => origin.trim());
+app.use(cors({ origin: allowedOrigins?.length ? allowedOrigins : true }));
 app.use(express.json());
 
-//for products
+// API routes consumed by the Vite frontend.
 app.use("/api/products", productRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api/recommendations", recommendationRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 // Health Check Route
 app.get("/", (req, res) => {

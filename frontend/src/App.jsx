@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, useLocation } from 'react-router-dom';
 import { Box, Typography, Container } from '@mui/material';
 import { Database, Package, ShoppingCart, Store } from 'lucide-react';
